@@ -33,7 +33,7 @@ jobs:
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: us-east-2
-          role-to-assume: arn:aws:iam::127213743756:role/PRX-GHA-AccessRole
+          role-to-assume: arn:aws:iam::578003269847:role/PRX-GHA-AccessRole
           role-session-name: gha-deploy-cloudformation-toolkit
 
       - name: Deploy CloudFormation stack
@@ -48,4 +48,4 @@ jobs:
             --no-progressbar \
             --s3-prefix cloudformation-toolkit \
             --capabilities CAPABILITY_IAM \
-            --role-arn arn:aws:iam::127213743756:role/PRX-GHA-ServiceRoleForCloudFormation
+            --role-arn arn:aws:iam::578003269847:role/PRX-GHA-ServiceRoleForCloudFormation
