@@ -1,0 +1,163 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Description: A collection of utilities that integrate with CloudFormation
+
+Resources:
+  # This is an _organization sink_ custom EventBridge event bus. It's intended
+  # to exist once within an AWS Organization (i.e., in a single region in a
+  # single account).
+  #
+  # All CloudFormation activity within the organization is expected to be sent
+  # to this event bus. Generally this is done by creating rules on all default
+  # event buses within the organization, which forward all CloudFormation
+  # service events to this bus.
+  #
+  # Any tooling that responds to CloudFormation service events can subscribe to
+  # the relevant events on this bus.
+  #
+  # This bus should always be called `CloudFormation-org-sink`, as that is what
+  # the rules on all default buses expect.
+  OrgSinkEventBus:
+    Type: AWS::Events::EventBus
+    Properties:
+      Name: CloudFormation-org-sink
+  OrgSinkEventBusPolicy:
+    Type: AWS::Events::EventBusPolicy
+    Properties:
+      EventBusName: !Ref OrgSinkEventBus
+      StatementId: AllowEventsToCfnOrgSink
+      Statement:
+        Action: events:PutEvents
+        Condition:
+          StringEquals:
+            aws:ResourceOrgID: ${aws:PrincipalOrgID}
+        Effect: Allow
+        Principal: "*"
+        Resource: !GetAtt OrgSinkEventBus.Arn
+
+  # Sends notifications to Slack in response to certain CloudFormation status
+  # change events that are generated anywhere within the AWS Organization.
+  # See eventbridge.mjs for details on how decisions are made for which to send
+  # and where they should be sent.
+  StatusChangeSlackNotificationsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/status-change-slack-notifications
+      Description: >-
+        Sends messages to Slack in response to CloudFormation stack event
+        notifications. Only certain notifications are forwarded to Slack, to
+        reduce the volume of messages.
+      Environment:
+        Variables:
+          AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1"
+      Events:
+        StatusChanges:
+          Properties:
+            EventBusName: !Ref OrgSinkEventBus
+            Pattern:
+              detail-type:
+                - CloudFormation Resource Status Change
+                - CloudFormation Stack Status Change
+              source:
+                - aws.cloudformation
+          Type: EventBridgeRule
+      Handler: index.handler
+      MemorySize: 192
+      Policies:
+        - Statement:
+            - Action: events:PutEvents
+              Effect: Allow
+              Resource: !Sub arn:${AWS::Partition}:events:${AWS::Region}:${AWS::AccountId}:event-bus/default
+          Version: "2012-10-17"
+      Runtime: nodejs20.x
+      Tags:
+        prx:meta:tagging-version: "2021-04-07"
+        prx:cloudformation:stack-name: !Ref AWS::StackName
+        prx:cloudformation:stack-id: !Ref AWS::StackId
+        prx:ops:environment: Production
+        prx:dev:application: CloudFormation Toolkit
+      Timeout: 20
+  StatusChangeSlackNotificationsLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${StatusChangeSlackNotificationsFunction}
+      RetentionInDays: 14
+      Tags:
+        - { Key: prx:meta:tagging-version, Value: "2021-04-07" }
+        - { Key: prx:cloudformation:stack-name, Value: !Ref AWS::StackName }
+        - { Key: prx:cloudformation:stack-id, Value: !Ref AWS::StackId }
+        - { Key: prx:ops:environment, Value: Production }
+        - { Key: prx:dev:application, Value: CloudFormation Toolkit }
+  StatusChangeSlackNotificationsErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub ERROR [Cfn Toolkit] Slack Notifications <prod> INVOCATION ERRORS (${AWS::StackName})
+      AlarmDescription: >-
+        The Lambda function that sends CloudFormation status change
+        notifications to Slack is experiencing errors, so some CloudFormation
+        activity may not be visible in Slack.
+      ComparisonOperator: GreaterThanThreshold
+      EvaluationPeriods: 1
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Period: 60
+      Statistic: Sum
+      Tags:
+        - { Key: prx:meta:tagging-version, Value: "2021-04-07" }
+        - { Key: prx:cloudformation:stack-name, Value: !Ref AWS::StackName }
+        - { Key: prx:cloudformation:stack-id, Value: !Ref AWS::StackId }
+        - { Key: prx:ops:environment, Value: Production }
+        - { Key: prx:dev:application, Value: CloudFormation Toolkit }
+      Threshold: 0
+      TreatMissingData: notBreaching
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref StatusChangeSlackNotificationsFunction
+
+  # Creates Lambda functions that back CloudFormation macros. This does NOT
+  # create the macro; macros must be created in each account which reference this
+  # function. The Lambda functions created by this template only need to exist
+  # once globally within an organization.
+  PrxUtility20210622:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/marco-prx-utility-20210622
+      Description: >-
+        Backs a CloudFormation macro that is used as a whole-template
+        transformer.
+      # Environment:
+      #   Variables:
+      #     ORGANIZATION_ID: !Ref OrganizationId
+      Handler: index.handler
+      MemorySize: 128
+      Runtime: nodejs18.x
+      Tags:
+        prx:meta:tagging-version: "2021-04-07"
+        prx:cloudformation:stack-name: !Ref AWS::StackName
+        prx:cloudformation:stack-id: !Ref AWS::StackId
+        prx:ops:environment: Production
+        prx:dev:application: CloudFormation Toolkit
+      Timeout: 8
+  PrxUtility20210622LogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${PrxUtility20210622}
+      RetentionInDays: 30
+      Tags:
+        - { Key: prx:meta:tagging-version, Value: "2021-04-07" }
+        - { Key: prx:cloudformation:stack-name, Value: !Ref AWS::StackName }
+        - { Key: prx:cloudformation:stack-id, Value: !Ref AWS::StackId }
+        - { Key: prx:ops:environment, Value: Production }
+        - { Key: prx:dev:application, Value: CloudFormation Toolkit }
+  # PrxUtility20210622OrgPermission:
+  #   Type: AWS::Lambda::Permission
+  #   Properties:
+  #     Action: lambda:InvokeFunction
+  #     FunctionName: !GetAtt PrxUtility20210622.Arn
+  #     Principal: "*"
+  #     PrincipalOrgID: !Ref OrganizationId
