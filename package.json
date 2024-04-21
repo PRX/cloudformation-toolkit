@@ -1,7 +1,7 @@
 {
   "name": "cloudformation-toolkit",
   "version": "1.0.0",
-  "description": "A collection of utilities that integrate with CloudForamtion",
+  "description": "A collection of utilities that integrate with CloudFormation",
   "type": "module",
   "engines": {
     "node": ">= 20.0.0"
