@@ -16,6 +16,8 @@ export default function message(event) {
   const stackSetID = stackSetArn.split("stackset/")[1];
   const stackSetName = stackSetID.split(":")[0];
 
+  const { action } = event.detail;
+
   const { status } = event.detail["status-details"];
 
   const { region } = event;
@@ -29,10 +31,10 @@ export default function message(event) {
   const accountNickname = accounts(event.account);
   const header = [
     `*<${deepStackUrl}|${accountNickname} - ${regionNickname} » ${stackSetName}>*`,
-    `Stack Set Status Change: *${status}*`,
+    `Stack Set Status Change: ${action} *${status}*`,
   ].join("\n");
 
-  const fallback = `${accountNickname} - ${regionNickname} » Stack Set ${stackSetName} is now ${status}`;
+  const fallback = `${accountNickname} - ${regionNickname} » Stack Set ${stackSetName} is now ${action} ${status}`;
 
   const msg = {
     username: SLACK_USERNAME,
