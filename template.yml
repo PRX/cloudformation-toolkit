@@ -23,6 +23,9 @@ Resources:
     Properties:
       Name: CloudFormation-org-sink
   OrgSinkEventBusPolicy:
+    # TODO Should have a Condition to limit this to events sent by events.amazonaws.com
+    # since it's only intended to get events from other event buses, not from
+    # any arbitrary sender
     Type: AWS::Events::EventBusPolicy
     Properties:
       EventBusName: !Ref OrgSinkEventBus
