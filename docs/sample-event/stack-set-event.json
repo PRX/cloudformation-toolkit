@@ -1,0 +1,18 @@
+{
+  "version": "0",
+  "id": "f8698be4-5139-e30e-e8c1-1462bbbe764e",
+  "detail-type": "CloudFormation StackSet Operation Status Change",
+  "source": "aws.cloudformation",
+  "account": "048723829744",
+  "time": "2024-04-22T03:27:25Z",
+  "region": "us-east-2",
+  "resources": [
+    "arn:aws:cloudformation:us-east-2:048723829744:stackset/org-sink-event-rules-management-account:76f20da2-a8b8-46bc-8556-2257dab866d0"
+  ],
+  "detail": {
+    "stack-set-arn": "arn:aws:cloudformation:us-east-2:048723829744:stackset/org-sink-event-rules-management-account:76f20da2-a8b8-46bc-8556-2257dab866d0",
+    "stack-set-operation-id": "e22fb8de-5ac4-c606-e4a9-2ed951a823c5",
+    "action": "CREATE",
+    "status-details": { "status": "SUCCEEDED" }
+  }
+}

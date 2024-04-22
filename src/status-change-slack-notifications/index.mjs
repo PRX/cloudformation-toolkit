@@ -10,14 +10,21 @@ import {
   EventBridgeClient,
   PutEventsCommand,
 } from "@aws-sdk/client-eventbridge";
-import msgFromEventBridgeEvent from "./eventbridge.mjs";
+import stackMessage from "./stack-change.mjs";
+import stackSetMessage from "./stack-set-change.mjs";
 
 const eventbridge = new EventBridgeClient({ apiVersion: "2015-10-07" });
 
 export const handler = async (event) => {
   console.log(JSON.stringify(event));
 
-  const message = msgFromEventBridgeEvent(event);
+  let message;
+
+  if (event["detail-type"].includes("CloudFormation StackSet")) {
+    stackSetMessage(event);
+  } else {
+    message = stackMessage(event);
+  }
 
   if (message) {
     await eventbridge.send(
