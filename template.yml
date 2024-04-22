@@ -62,6 +62,8 @@ Resources:
               detail-type:
                 - CloudFormation Resource Status Change
                 - CloudFormation Stack Status Change
+                - CloudFormation StackSet Status Change
+                - CloudFormation StackSet Operation Status Change
               source:
                 - aws.cloudformation
           Type: EventBridgeRule
