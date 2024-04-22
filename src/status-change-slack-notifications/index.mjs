@@ -21,7 +21,7 @@ export const handler = async (event) => {
   let message;
 
   if (event["detail-type"].includes("CloudFormation StackSet")) {
-    stackSetMessage(event);
+    message = stackSetMessage(event);
   } else {
     message = stackMessage(event);
   }
