@@ -167,7 +167,8 @@ export default function message(event) {
   if (
     !resourceType &&
     (concerning.includes(status) || ["UPDATE_COMPLETE"].includes(status)) &&
-    !stackName.includes("infrastructure-cd-root-")
+    !stackName.includes("infrastructure-cd-root-") &&
+    !stackName.startsWith("StackSet-")
   ) {
     msg.channel = SLACK_DEBUG_CHANNEL;
     return msg;
