@@ -92,7 +92,7 @@ export default function message(event) {
   const { region } = event;
   const stackUrl = `https://${region}.console.aws.amazon.com/cloudformation/home?region=${region}#/stacks/stackinfo?stackId=${stackId}`;
 
-  const deepLinkRoleName = "ViewOnlyAccess";
+  const deepLinkRoleName = "AdministratorAccess";
   const urlEncodedStackUrl = encodeURIComponent(stackUrl);
   const deepStackUrl = `https://d-906713e952.awsapps.com/start/#/console?account_id=${event.account}&role_name=${deepLinkRoleName}&destination=${urlEncodedStackUrl}`;
 
