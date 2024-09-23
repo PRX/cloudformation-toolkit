@@ -2,7 +2,7 @@ import regions from "./regions.mjs";
 import accounts from "./accounts.mjs";
 
 const SLACK_DEBUG_CHANNEL = "G2QHC11SM"; // #ops-debug
-const SLACK_INFO_CHANNEL = "G2QHBL6UX"; // #ops-info
+// const SLACK_INFO_CHANNEL = "G2QHBL6UX"; // #ops-info
 const SLACK_ICON = ":ops-cloudformation:";
 const SLACK_USERNAME = "AWS CloudFormation";
 
@@ -56,17 +56,18 @@ function colorForResourceStatus(status) {
 }
 
 const concerning = [
-  "ROLLBACK_COMPLETE",
-  "UPDATE_ROLLBACK_COMPLETE",
-  "DELETE_IN_PROGRESS",
-  "ROLLBACK_IN_PROGRESS",
   "CREATE_FAILED",
   "DELETE_FAILED",
-  "UPDATE_FAILED",
+  "DELETE_IN_PROGRESS",
+  "ROLLBACK_COMPLETE",
   "ROLLBACK_FAILED",
+  "ROLLBACK_IN_PROGRESS",
+  "UPDATE_FAILED",
+  "UPDATE_ROLLBACK_COMPLETE",
+  "UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS",
   "UPDATE_ROLLBACK_FAILED",
   "UPDATE_ROLLBACK_IN_PROGRESS",
-  "UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS",
+  "IMPORT_ROLLBACK_FAILED",
 ];
 
 export default function message(event) {
@@ -82,13 +83,6 @@ export default function message(event) {
   const { status } = event.detail["status-details"];
   const statusReason = event.detail["status-details"]["status-reason"];
 
-  // For resource status events, there will also be information about the
-  // resource that is changing
-  // And information about the resource that is actually changing
-  const resourceType = event.detail["resource-type"];
-  const logicalResourceId = event.detail["logical-resource-id"];
-  const physicalResourceId = event.detail["physical-resource-id"];
-
   const { region } = event;
   const stackUrl = `https://${region}.console.aws.amazon.com/cloudformation/home?region=${region}#/stacks/stackinfo?stackId=${stackId}`;
 
@@ -100,14 +94,10 @@ export default function message(event) {
   const accountNickname = accounts(event.account);
   const header = [
     `*<${deepStackUrl}|${accountNickname} - ${regionNickname} » ${stackName}>*`,
-    resourceType
-      ? `Resource Status Change: *${status}* for \`${resourceType}\``
-      : `Stack Status Change: *${status}*`,
+    `Stack Status Change: *${status}*`,
   ].join("\n");
 
-  const fallback = resourceType
-    ? `${accountNickname} - ${regionNickname} » ${resourceType} ${logicalResourceId} in ${stackName} is now ${status}`
-    : `${accountNickname} - ${regionNickname} » Stack ${stackName} is now ${status}`;
+  const fallback = `${accountNickname} - ${regionNickname} » Stack ${stackName} is now ${status}`;
 
   const msg = {
     username: SLACK_USERNAME,
@@ -130,51 +120,13 @@ export default function message(event) {
     ],
   };
 
-  // DELETE_SKIPPED events are funnelled to a specific Slack channel so they
-  // can be cleaned up if necessary
-  if (status === "DELETE_SKIPPED") {
-    msg.channel = "#ops-delete-skipped";
-    msg.attachments[0].blocks.push({
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: physicalResourceId
-          ? `Physical ID: \`${physicalResourceId}\``
-          : "No physical ID",
-      },
-    });
-
-    return msg;
-  }
-
-  // For Spire root stacks, send all start, finish, and concerning status
-  // notifications to INFO
-  // For stack status events, send all start, finish, and concerning
-  // notifications to the INFO channel
-  if (
-    !resourceType &&
-    (stackName.endsWith("root-staging") ||
-      stackName.endsWith("root-production")) &&
-    (concerning.includes(status) ||
-      ["UPDATE_IN_PROGRESS", "UPDATE_COMPLETE"].includes(status))
-  ) {
-    msg.channel = SLACK_INFO_CHANNEL;
-    // eslint-disable-next-line consistent-return
-    return;
-  }
-
-  // For other stacks, send finish and concerning notifications to DEBUG
-  if (
-    !resourceType &&
-    (concerning.includes(status) || ["UPDATE_COMPLETE"].includes(status)) &&
-    !stackName.includes("infrastructure-cd-root-") &&
-    !stackName.startsWith("StackSet-")
-  ) {
+  // Send end-stage and concerning notifications to DEBUG
+  if (concerning.includes(status) || status.endsWith("_COMPLETE")) {
     msg.channel = SLACK_DEBUG_CHANNEL;
     return msg;
   }
 
-  // For everything that isn't a root stack, send any notifications that
+  // Send any notifications that
   // include a reason to DEBUG. Reasons are most often provided when there is
   // an issue ("resources failed to create", "handler returned message", etc).
   // But some nominal updates do include reasons.
@@ -193,6 +145,5 @@ export default function message(event) {
     return msg;
   }
 
-  // eslint-disable-next-line consistent-return, no-useless-return
-  return;
+  return false;
 }

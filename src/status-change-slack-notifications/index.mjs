@@ -10,7 +10,9 @@ import {
   EventBridgeClient,
   PutEventsCommand,
 } from "@aws-sdk/client-eventbridge";
-import stackMessage from "./stack-change.mjs";
+import stackStatusChangeMessage from "./stack-status-change.mjs";
+import resourceStatusChangeMessage from "./resource-status-change.mjs";
+
 import stackSetMessage from "./stack-set-change.mjs";
 
 const eventbridge = new EventBridgeClient({ apiVersion: "2015-10-07" });
@@ -22,8 +24,10 @@ export const handler = async (event) => {
 
   if (event["detail-type"].includes("CloudFormation StackSet")) {
     message = stackSetMessage(event);
-  } else {
-    message = stackMessage(event);
+  } else if (event["detail-type"] === "CloudFormation Stack Status Change") {
+    message = stackStatusChangeMessage(event);
+  } else if (event["detail-type"] === "CloudFormation Resource Status Change") {
+    message = resourceStatusChangeMessage(event);
   }
 
   if (message) {
