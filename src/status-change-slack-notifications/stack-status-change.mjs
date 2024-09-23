@@ -120,7 +120,7 @@ export default function message(event) {
     ],
   };
 
-  // Supress some notifications for Spire stack events
+  // Suppress some notifications for Spire stack events
   if (
     status === "UPDATE_COMPLETE" &&
     stackName.startsWith("infrastructure-cd-root-")
