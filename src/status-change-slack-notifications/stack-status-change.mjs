@@ -120,6 +120,14 @@ export default function message(event) {
     ],
   };
 
+  // Supress some notifications for Spire stack events
+  if (
+    status === "UPDATE_COMPLETE" &&
+    stackName.startsWith("infrastructure-cd-root-")
+  ) {
+    return false;
+  }
+
   // Send end-stage and concerning notifications to DEBUG
   if (concerning.includes(status) || status.endsWith("_COMPLETE")) {
     msg.channel = SLACK_DEBUG_CHANNEL;
