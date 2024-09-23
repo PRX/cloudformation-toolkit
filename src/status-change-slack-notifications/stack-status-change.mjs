@@ -123,6 +123,16 @@ export default function message(event) {
   // Send end-stage and concerning notifications to DEBUG
   if (concerning.includes(status) || status.endsWith("_COMPLETE")) {
     msg.channel = SLACK_DEBUG_CHANNEL;
+
+    if (statusReason) {
+      msg.attachments[0].blocks.push({
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `> ${statusReason}`,
+        },
+      });
+    }
     return msg;
   }
 
