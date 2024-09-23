@@ -146,6 +146,13 @@ export default function message(event) {
     ].includes(statusReason)
   ) {
     msg.channel = SLACK_DEBUG_CHANNEL;
+    msg.attachments[0].blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `> ${statusReason}`,
+      },
+    });
     return msg;
   }
 
