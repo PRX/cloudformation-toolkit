@@ -87,7 +87,7 @@ export default function message(event) {
 
   const header = [
     `*<${deepStackUrl}|${accountNickname} - ${regionNickname} » ${stackName}>*`,
-    `Resource Status Change: *${status}* for \`${resourceType}\``,
+    `Resource Status Change: *${status}* for \`${resourceType}\` – \`${logicalResourceId}\``,
   ].join("\n");
 
   const fallback = `${accountNickname} - ${regionNickname} » ${resourceType} ${logicalResourceId} in ${stackName} is now ${status}`;
