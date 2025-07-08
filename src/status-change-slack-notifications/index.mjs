@@ -10,10 +10,9 @@ import {
   EventBridgeClient,
   PutEventsCommand,
 } from "@aws-sdk/client-eventbridge";
-import stackStatusChangeMessage from "./stack-status-change.mjs";
 import resourceStatusChangeMessage from "./resource-status-change.mjs";
-
 import stackSetMessage from "./stack-set-change.mjs";
+import stackStatusChangeMessage from "./stack-status-change.mjs";
 
 const eventbridge = new EventBridgeClient({ apiVersion: "2015-10-07" });
 

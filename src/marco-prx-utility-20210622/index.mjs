@@ -5,7 +5,7 @@ const REF_KEY = "Ref";
 function refs(fragment, key, ref) {
   switch (ref) {
     case "PRX::Timestamp":
-      fragment[key] = `${(+new Date() / 1000).toFixed(0)}`;
+      fragment[key] = `${(Date.now() / 1000).toFixed(0)}`;
       break;
     case "PRX::AWSOrganizationID":
       fragment[key] = process.env.ORGANIZATION_ID;
