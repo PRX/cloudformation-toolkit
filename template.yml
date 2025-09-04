@@ -46,6 +46,7 @@ Resources:
   StatusChangeSlackNotificationsFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Architectures: [arm64]
       CodeUri: src/status-change-slack-notifications
       Description: >-
         Sends messages to Slack in response to CloudFormation stack event
@@ -129,6 +130,7 @@ Resources:
   PrxUtility20210622:
     Type: AWS::Serverless::Function
     Properties:
+      Architectures: [arm64]
       CodeUri: src/marco-prx-utility-20210622
       Description: >-
         Backs a CloudFormation macro that is used as a whole-template
