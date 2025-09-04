@@ -138,7 +138,7 @@ Resources:
       #     ORGANIZATION_ID: !Ref OrganizationId
       Handler: index.handler
       MemorySize: 128
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Tags:
         prx:meta:tagging-version: "2021-04-07"
         prx:cloudformation:stack-name: !Ref AWS::StackName
