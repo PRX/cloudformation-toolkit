@@ -1,5 +1,5 @@
-import regions from "./regions.mjs";
 import accounts from "./accounts.mjs";
+import regions from "./regions.mjs";
 
 const SLACK_DEBUG_CHANNEL = "G2QHC11SM"; // #ops-debug
 const SLACK_SKIPPED_CHANNEL = "C0358B7NE9W"; // #ops-delete-skipped
