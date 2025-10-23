@@ -1,5 +1,5 @@
 {
-  "name": "slack-notifications",
+  "name": "status-change-slack-notifications",
   "version": "0.0.1",
   "dependencies": {
     "@aws-sdk/client-eventbridge": "*"
