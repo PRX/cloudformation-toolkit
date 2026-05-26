@@ -80,7 +80,7 @@ export default function message(event) {
 
   const deepLinkRoleName = "AdministratorAccess";
   const urlEncodedStackUrl = encodeURIComponent(stackUrl);
-  const deepStackUrl = `https://d-906713e952.awsapps.com/start/#/console?account_id=${event.account}&role_name=${deepLinkRoleName}&destination=${urlEncodedStackUrl}`;
+  const deepStackUrl = `https://aws.prx.tech/#/console?account_id=${event.account}&role_name=${deepLinkRoleName}&destination=${urlEncodedStackUrl}`;
 
   const regionNickname = regions(region);
   const accountNickname = accounts(event.account);
