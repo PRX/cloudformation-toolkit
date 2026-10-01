@@ -143,6 +143,7 @@ export default function message(event) {
       "Resource creation Initiated",
       "Requested update required the provider to create a new physical resource",
       "Requested update requires the creation of a new physical resource; hence creating one.",
+      "Eventual consistency check initiated",
     ].includes(statusReason)
   ) {
     msg.channel = SLACK_DEBUG_CHANNEL;
