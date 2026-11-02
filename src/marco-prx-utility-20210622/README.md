@@ -5,7 +5,6 @@ Provides some general-purpose whole-template transformations.
 ## Pseudo parameters
 
 Adds the following pseudo parameters:
-
 - `PRX::AWSOrganizationID` – e.g., `"o-abcde12345"`
 - `PRX::Timestamp` – The integer number of seconds since 1970 as a string (e.g., `"1643398521"`)
 
